@@ -1,6 +1,17 @@
-#include <iostream>
+#include "Game.h"
+#include "GameWindow.h"
 
-int main() {
-    std::cout << "WealthCraft starter project" << std::endl;
+int main()
+{
+    Game game;
+
+    game.initialize();
+
+    GameWindow window(game);
+
+    window.run();
+
+    game.shutdown();
+
     return 0;
 }
