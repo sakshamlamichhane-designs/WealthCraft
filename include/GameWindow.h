@@ -2,6 +2,8 @@
 
 #include <SFML/Graphics.hpp>
 
+#include <string>
+
 #include "Game.h"
 
 class GameWindow
@@ -30,8 +32,17 @@ private:
     void render();
 
     void drawDashboard();
+
     void drawBuyWindow();
     void drawSellWindow();
     void drawLoanWindow();
     void drawFinanceWindow();
+
+    void drawGameOverWindow();
+
+    void closeOtherWindows(
+        bool keepBuy,
+        bool keepSell,
+        bool keepLoan,
+        bool keepFinance);
 };

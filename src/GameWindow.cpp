@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <string>
 
+
 GameWindow::GameWindow(Game& game)
     : game_(game),
       window_(
@@ -33,15 +34,22 @@ GameWindow::GameWindow(Game& game)
 
     ImGui::GetIO().FontGlobalScale = 1.10f;
 
-    ImGuiStyle& style = ImGui::GetStyle();
+    ImGuiStyle& style =
+        ImGui::GetStyle();
+
     style.WindowRounding = 8.0f;
     style.FrameRounding = 6.0f;
     style.GrabRounding = 6.0f;
 }
 
+
+// ============================================================
+// MAIN LOOP
+// ============================================================
+
 void GameWindow::run()
 {
-    while (window_.isOpen() && game_.isRunning())
+    while (window_.isOpen())
     {
         processEvents();
 
@@ -59,11 +67,19 @@ void GameWindow::run()
     ImGui::SFML::Shutdown(window_);
 }
 
+
+// ============================================================
+// EVENT PROCESSING
+// ============================================================
+
 void GameWindow::processEvents()
 {
-    while (const std::optional event = window_.pollEvent())
+    while (const std::optional event =
+               window_.pollEvent())
     {
-        ImGui::SFML::ProcessEvent(window_, *event);
+        ImGui::SFML::ProcessEvent(
+            window_,
+            *event);
 
         if (event->is<sf::Event::Closed>())
         {
@@ -72,32 +88,82 @@ void GameWindow::processEvents()
     }
 }
 
+
+// ============================================================
+// RENDER
+// ============================================================
+
 void GameWindow::render()
 {
-    window_.clear(sf::Color(24, 27, 32));
+    window_.clear(
+        sf::Color(24, 27, 32));
 
-    drawDashboard();
-
-    if (showBuyWindow_)
+    if (game_.isGameOver())
     {
-        drawBuyWindow();
+        drawGameOverWindow();
     }
-
-    if (showSellWindow_)
+    else
     {
-        drawSellWindow();
-    }
+        drawDashboard();
 
-    if (showLoanWindow_)
-    {
-        drawLoanWindow();
-    }
+        if (showBuyWindow_)
+        {
+            drawBuyWindow();
+        }
 
-    if (showFinanceWindow_)
-    {
-        drawFinanceWindow();
+        if (showSellWindow_)
+        {
+            drawSellWindow();
+        }
+
+        if (showLoanWindow_)
+        {
+            drawLoanWindow();
+        }
+
+        if (showFinanceWindow_)
+        {
+            drawFinanceWindow();
+        }
     }
 }
+
+
+// ============================================================
+// WINDOW STATE MANAGEMENT
+// ============================================================
+
+void GameWindow::closeOtherWindows(
+    bool keepBuy,
+    bool keepSell,
+    bool keepLoan,
+    bool keepFinance)
+{
+    if (!keepBuy)
+    {
+        showBuyWindow_ = false;
+    }
+
+    if (!keepSell)
+    {
+        showSellWindow_ = false;
+    }
+
+    if (!keepLoan)
+    {
+        showLoanWindow_ = false;
+    }
+
+    if (!keepFinance)
+    {
+        showFinanceWindow_ = false;
+    }
+}
+
+
+// ============================================================
+// DASHBOARD
+// ============================================================
 
 void GameWindow::drawDashboard()
 {
@@ -125,10 +191,17 @@ void GameWindow::drawDashboard()
 
     ImGui::Separator();
 
-    // Financial summary
-    ImGui::Columns(3, nullptr, false);
+    // --------------------------------------------------------
+    // FINANCIAL SUMMARY
+    // --------------------------------------------------------
+
+    ImGui::Columns(
+        3,
+        nullptr,
+        false);
 
     ImGui::Text("CASH");
+
     ImGui::Text(
         "$%.2f",
         game_.getPlayer().getCash());
@@ -136,6 +209,7 @@ void GameWindow::drawDashboard()
     ImGui::NextColumn();
 
     ImGui::Text("NET WORTH");
+
     ImGui::Text(
         "$%.2f",
         game_.getPlayer().calculateNetWorth());
@@ -143,6 +217,7 @@ void GameWindow::drawDashboard()
     ImGui::NextColumn();
 
     ImGui::Text("DEBT");
+
     ImGui::Text(
         "$%.2f",
         game_.getPlayer().getTotalDebt());
@@ -151,10 +226,19 @@ void GameWindow::drawDashboard()
 
     ImGui::Separator();
 
-    // Main content
-    ImGui::Columns(2, "MainColumns", true);
+    // --------------------------------------------------------
+    // MAIN CONTENT
+    // --------------------------------------------------------
 
-    // Portfolio
+    ImGui::Columns(
+        2,
+        "MainColumns",
+        true);
+
+    // --------------------------------------------------------
+    // PORTFOLIO
+    // --------------------------------------------------------
+
     ImGui::Text("PORTFOLIO");
 
     const Portfolio& portfolio =
@@ -162,7 +246,8 @@ void GameWindow::drawDashboard()
 
     if (portfolio.assetCount() == 0)
     {
-        ImGui::TextDisabled("No assets owned.");
+        ImGui::TextDisabled(
+            "No assets owned.");
     }
     else
     {
@@ -175,6 +260,7 @@ void GameWindow::drawDashboard()
         {
             ImGui::TableSetupColumn("Asset");
             ImGui::TableSetupColumn("Current Value");
+
             ImGui::TableHeadersRow();
 
             for (std::size_t i = 0;
@@ -211,8 +297,13 @@ void GameWindow::drawDashboard()
 
     ImGui::NextColumn();
 
-    // Economic information
-    ImGui::Text("ECONOMIC EVENT");
+    // --------------------------------------------------------
+    // ECONOMIC INFORMATION
+    // --------------------------------------------------------
+
+    ImGui::Text(
+        "ECONOMIC EVENT");
+
     ImGui::Separator();
 
     const Event& event =
@@ -232,23 +323,31 @@ void GameWindow::drawDashboard()
 
     ImGui::Text(
         "Inflation: %.2f%%",
-        game_.getEconomy().getInflationRate() * 100.0);
+        game_.getEconomy()
+            .getInflationRate() * 100.0);
 
     ImGui::Text(
         "Interest Rate: %.2f%%",
-        game_.getEconomy().getInterestRate() * 100.0);
+        game_.getEconomy()
+            .getInterestRate() * 100.0);
 
     ImGui::Text(
         "Monthly Expenses: $%.2f",
-        game_.getPlayer().getMonthlyExpenses());
+        game_.getPlayer()
+            .getMonthlyExpenses());
 
     ImGui::Text(
         "Loan Payments: $%.2f",
-        game_.getPlayer().getMonthlyLoanPayments());
+        game_.getPlayer()
+            .getMonthlyLoanPayments());
 
     ImGui::Columns(1);
 
     ImGui::Separator();
+
+    // --------------------------------------------------------
+    // STATUS MESSAGE
+    // --------------------------------------------------------
 
     if (!statusMessage_.empty())
     {
@@ -259,11 +358,20 @@ void GameWindow::drawDashboard()
         ImGui::Spacing();
     }
 
-    // Main actions
+    // --------------------------------------------------------
+    // MAIN BUTTONS
+    // --------------------------------------------------------
+
     if (ImGui::Button(
             "BUY ASSET",
             ImVec2(175.0f, 50.0f)))
     {
+        closeOtherWindows(
+            true,
+            false,
+            false,
+            false);
+
         showBuyWindow_ = true;
     }
 
@@ -273,6 +381,12 @@ void GameWindow::drawDashboard()
             "SELL ASSET",
             ImVec2(175.0f, 50.0f)))
     {
+        closeOtherWindows(
+            false,
+            true,
+            false,
+            false);
+
         showSellWindow_ = true;
     }
 
@@ -282,6 +396,12 @@ void GameWindow::drawDashboard()
             "LOAN CENTER",
             ImVec2(175.0f, 50.0f)))
     {
+        closeOtherWindows(
+            false,
+            false,
+            true,
+            false);
+
         showLoanWindow_ = true;
     }
 
@@ -291,6 +411,12 @@ void GameWindow::drawDashboard()
             "FINANCE",
             ImVec2(150.0f, 50.0f)))
     {
+        closeOtherWindows(
+            false,
+            false,
+            false,
+            true);
+
         showFinanceWindow_ = true;
     }
 
@@ -304,6 +430,15 @@ void GameWindow::drawDashboard()
 
         statusMessage_ =
             "A new month has begun.";
+
+        if (game_.isGameOver())
+        {
+            closeOtherWindows(
+                false,
+                false,
+                false,
+                false);
+        }
     }
 
     ImGui::SameLine();
@@ -318,8 +453,21 @@ void GameWindow::drawDashboard()
     ImGui::End();
 }
 
+
+// ============================================================
+// BUY WINDOW
+// ============================================================
+
 void GameWindow::drawBuyWindow()
 {
+    ImGui::SetNextWindowSize(
+        ImVec2(540.0f, 440.0f),
+        ImGuiCond_FirstUseEver);
+
+    ImGui::SetNextWindowPos(
+        ImVec2(330.0f, 110.0f),
+        ImGuiCond_FirstUseEver);
+
     ImGui::Begin(
         "Buy Assets",
         &showBuyWindow_);
@@ -327,6 +475,9 @@ void GameWindow::drawBuyWindow()
     ImGui::Text(
         "Available Cash: $%.2f",
         game_.getPlayer().getCash());
+
+    ImGui::TextDisabled(
+        "Prices reflect current economic conditions.");
 
     ImGui::Separator();
 
@@ -340,33 +491,28 @@ void GameWindow::drawBuyWindow()
         "Index Fund"
     };
 
-    const double prices[] =
-    {
-        200.0,
-        1000.0,
-        500.0,
-        10000.0,
-        5000.0,
-        2000.0
-    };
-
     for (int i = 0; i < 6; ++i)
     {
+        const double currentPrice =
+            game_.getAssetPurchasePrice(i + 1);
+
+        ImGui::PushID(i);
+
         ImGui::Text(
             "%s",
             names[i]);
 
-        ImGui::SameLine(300.0f);
+        ImGui::SameLine(240.0f);
 
         ImGui::Text(
             "$%.2f",
-            prices[i]);
+            currentPrice);
 
-        ImGui::SameLine(450.0f);
+        ImGui::SameLine(390.0f);
 
-        ImGui::PushID(i);
-
-        if (ImGui::Button("BUY"))
+        if (ImGui::Button(
+                "BUY",
+                ImVec2(80.0f, 30.0f)))
         {
             if (game_.buyAsset(i + 1))
             {
@@ -387,11 +533,33 @@ void GameWindow::drawBuyWindow()
         ImGui::PopID();
     }
 
+    ImGui::Separator();
+
+    if (ImGui::Button(
+            "BACK",
+            ImVec2(100.0f, 35.0f)))
+    {
+        showBuyWindow_ = false;
+    }
+
     ImGui::End();
 }
 
+
+// ============================================================
+// SELL WINDOW
+// ============================================================
+
 void GameWindow::drawSellWindow()
 {
+    ImGui::SetNextWindowSize(
+        ImVec2(560.0f, 430.0f),
+        ImGuiCond_FirstUseEver);
+
+    ImGui::SetNextWindowPos(
+        ImVec2(320.0f, 110.0f),
+        ImGuiCond_FirstUseEver);
+
     ImGui::Begin(
         "Sell Assets",
         &showSellWindow_);
@@ -420,15 +588,17 @@ void GameWindow::drawSellWindow()
                 "%s",
                 asset.getName().c_str());
 
-            ImGui::SameLine(300.0f);
+            ImGui::SameLine(280.0f);
 
             ImGui::Text(
                 "$%.2f",
                 asset.getValue());
 
-            ImGui::SameLine(450.0f);
+            ImGui::SameLine(430.0f);
 
-            if (ImGui::Button("SELL"))
+            if (ImGui::Button(
+                    "SELL",
+                    ImVec2(80.0f, 30.0f)))
             {
                 const std::string soldName =
                     asset.getName();
@@ -440,25 +610,49 @@ void GameWindow::drawSellWindow()
                         soldName +
                         ".";
 
-                    ImGui::PopID();
-
                     showSellWindow_ = false;
 
+                    ImGui::PopID();
                     ImGui::End();
 
                     return;
                 }
+
+                statusMessage_ =
+                    "Unable to sell that asset.";
             }
 
             ImGui::PopID();
         }
     }
 
+    ImGui::Separator();
+
+    if (ImGui::Button(
+            "BACK",
+            ImVec2(100.0f, 35.0f)))
+    {
+        showSellWindow_ = false;
+    }
+
     ImGui::End();
 }
 
+
+// ============================================================
+// LOAN WINDOW
+// ============================================================
+
 void GameWindow::drawLoanWindow()
 {
+    ImGui::SetNextWindowSize(
+        ImVec2(530.0f, 430.0f),
+        ImGuiCond_FirstUseEver);
+
+    ImGui::SetNextWindowPos(
+        ImVec2(335.0f, 110.0f),
+        ImGuiCond_FirstUseEver);
+
     ImGui::Begin(
         "Loan Center",
         &showLoanWindow_);
@@ -473,7 +667,8 @@ void GameWindow::drawLoanWindow()
 
     ImGui::Text(
         "Monthly Payments: $%.2f",
-        game_.getPlayer().getMonthlyLoanPayments());
+        game_.getPlayer()
+            .getMonthlyLoanPayments());
 
     ImGui::Separator();
 
@@ -495,7 +690,7 @@ void GameWindow::drawLoanWindow()
 
     if (ImGui::Button(
             "TAKE PERSONAL LOAN",
-            ImVec2(220.0f, 45.0f)))
+            ImVec2(240.0f, 45.0f)))
     {
         if (game_.getPlayer().takeLoan(
                 loanAmount_,
@@ -514,9 +709,11 @@ void GameWindow::drawLoanWindow()
         }
     }
 
+    ImGui::Spacing();
+
     if (ImGui::Button(
             "TAKE MORTGAGE",
-            ImVec2(220.0f, 45.0f)))
+            ImVec2(240.0f, 45.0f)))
     {
         if (game_.getPlayer().takeLoan(
                 loanAmount_,
@@ -543,13 +740,36 @@ void GameWindow::drawLoanWindow()
 
     ImGui::Text(
         "Monthly Debt Service: $%.2f",
-        game_.getPlayer().getMonthlyLoanPayments());
+        game_.getPlayer()
+            .getMonthlyLoanPayments());
+
+    ImGui::Spacing();
+
+    if (ImGui::Button(
+            "BACK",
+            ImVec2(100.0f, 35.0f)))
+    {
+        showLoanWindow_ = false;
+    }
 
     ImGui::End();
 }
 
+
+// ============================================================
+// FINANCE WINDOW
+// ============================================================
+
 void GameWindow::drawFinanceWindow()
 {
+    ImGui::SetNextWindowSize(
+        ImVec2(530.0f, 410.0f),
+        ImGuiCond_FirstUseEver);
+
+    ImGui::SetNextWindowPos(
+        ImVec2(335.0f, 120.0f),
+        ImGuiCond_FirstUseEver);
+
     ImGui::Begin(
         "Financial Management",
         &showFinanceWindow_);
@@ -560,7 +780,8 @@ void GameWindow::drawFinanceWindow()
 
     ImGui::Text(
         "Monthly Expenses: $%.2f",
-        game_.getPlayer().getMonthlyExpenses());
+        game_.getPlayer()
+            .getMonthlyExpenses());
 
     ImGui::Separator();
 
@@ -576,7 +797,8 @@ void GameWindow::drawFinanceWindow()
         else
         {
             statusMessage_ =
-                "Not enough cash for the skill upgrade.";
+                "Not enough cash "
+                "for the skill upgrade.";
         }
     }
 
@@ -586,7 +808,8 @@ void GameWindow::drawFinanceWindow()
             "REDUCE EXPENSES - $3000/MONTH",
             ImVec2(280.0f, 45.0f)))
     {
-        if (game_.getPlayer().cutDiscretionaryExpenses())
+        if (game_.getPlayer()
+                .cutDiscretionaryExpenses())
         {
             statusMessage_ =
                 "Monthly expenses reduced.";
@@ -594,7 +817,8 @@ void GameWindow::drawFinanceWindow()
         else
         {
             statusMessage_ =
-                "Expenses cannot be reduced further.";
+                "Monthly expenses cannot "
+                "be reduced further.";
         }
     }
 
@@ -606,7 +830,134 @@ void GameWindow::drawFinanceWindow()
 
     ImGui::Text(
         "Expenses: $%.2f",
-        game_.getPlayer().getMonthlyExpenses());
+        game_.getPlayer()
+            .getMonthlyExpenses());
+
+    ImGui::Spacing();
+
+    if (ImGui::Button(
+            "BACK",
+            ImVec2(100.0f, 35.0f)))
+    {
+        showFinanceWindow_ = false;
+    }
+
+    ImGui::End();
+}
+
+
+// ============================================================
+// FINAL RESULT WINDOW
+// ============================================================
+
+void GameWindow::drawGameOverWindow()
+{
+    ImGui::SetNextWindowPos(
+        ImVec2(250.0f, 90.0f),
+        ImGuiCond_Always);
+
+    ImGui::SetNextWindowSize(
+        ImVec2(700.0f, 520.0f),
+        ImGuiCond_Always);
+
+    ImGuiWindowFlags flags =
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoCollapse;
+
+    const char* title =
+        game_.playerWon()
+            ? "WEALTHCRAFT - YOU WIN!"
+            : "WEALTHCRAFT - GAME OVER";
+
+    ImGui::Begin(
+        title,
+        nullptr,
+        flags);
+
+    ImGui::Spacing();
+    ImGui::Spacing();
+
+    if (game_.playerWon())
+    {
+        ImGui::Text(
+            "CONGRATULATIONS!");
+
+        ImGui::Spacing();
+
+        ImGui::TextWrapped(
+            "You successfully survived all 12 months "
+            "and reached the required financial target.");
+    }
+    else
+    {
+        if (game_.getPlayer().isBankrupt())
+        {
+            ImGui::Text(
+                "BANKRUPTCY");
+
+            ImGui::Spacing();
+
+            ImGui::TextWrapped(
+                "Your financial position became "
+                "unsustainable before the challenge ended.");
+        }
+        else
+        {
+            ImGui::Text(
+                "CHALLENGE FAILED");
+
+            ImGui::Spacing();
+
+            ImGui::TextWrapped(
+                "You survived all 12 months, but did "
+                "not reach the required financial target.");
+        }
+    }
+
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+
+    ImGui::Text(
+        "Final Month: %d",
+        game_.getCurrentMonth());
+
+    ImGui::Spacing();
+
+    ImGui::Text(
+        "Final Cash: $%.2f",
+        game_.getPlayer().getCash());
+
+    ImGui::Text(
+        "Final Portfolio Value: $%.2f",
+        game_.getPlayer()
+            .getPortfolio()
+            .calculateTotalValue());
+
+    ImGui::Text(
+        "Final Debt: $%.2f",
+        game_.getPlayer().getTotalDebt());
+
+    ImGui::Text(
+        "Final Net Worth: $%.2f",
+        game_.getPlayer()
+            .calculateNetWorth());
+
+    ImGui::Spacing();
+
+    ImGui::Text(
+        "Target Net Worth: $100000.00");
+
+    ImGui::Spacing();
+    ImGui::Spacing();
+
+    if (ImGui::Button(
+            "EXIT GAME",
+            ImVec2(180.0f, 55.0f)))
+    {
+        window_.close();
+    }
 
     ImGui::End();
 }
