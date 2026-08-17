@@ -511,3 +511,15 @@ The project is a collaborative semester project.
 14. Academic Note
 
 WealthCraft is an educational simulation. Its financial models are simplified game models intended to demonstrate concepts such as cash flow, diversification, compounding, debt, inflation, volatility, and financial decision-making. It is not intended to provide real-world investment advice or reproduce live financial markets.
+
+## Download
+
+### Windows Portable Build
+
+The latest portable Windows build is available from the GitHub Releases page:
+
+https://github.com/sakshamlamichhane-designs/WealthCraft/releases/latest
+
+Download `WealthCraft_Portable.zip`, extract it, open the `dist` folder, and run `WealthCraft.exe`.
+
+No development environment or library installation is required for the portable build.
